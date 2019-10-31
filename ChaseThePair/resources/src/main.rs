@@ -35,6 +35,6 @@ fn main() {
     let values : Vec<_> = vectors.iter().map(|v| find_closer(v, to_chase)).collect();
     println!("{} ms for whatever you did.", start.elapsed().as_millis());
     println!("To chase: {:?}", to_chase);
-    println!("Vectors: {:?}", vectors);
+    //println!("Vectors: {:?}", vectors);
     println!("Solutions: {:?}", values);
 }
