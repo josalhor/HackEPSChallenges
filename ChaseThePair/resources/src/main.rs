@@ -6,9 +6,9 @@ use std::time::{Instant};
 use rand::prelude::*;
 use std::{env};
 
-type NumberPr = i16;
-const MAX_GEN : u16 = u16::max_value();
-const MIN_GEN : u16 = u16::min_value();
+type NumberPr = i32;
+const MAX_GEN : u32 = u32::max_value();
+const MIN_GEN : u32 = u32::min_value();
 
 
 fn get_vector(mut rng: ThreadRng, len: usize) -> Vec<NumberPr> {
@@ -22,9 +22,20 @@ fn get_vectors(len: usize) -> [Vec<NumberPr>; 2] {
 
 fn find_closer(vec: &Vec<NumberPr>, to_chase: NumberPr) -> NumberPr {
     assert!(vec.len() > 0);
-    vec.iter()
-        .min_by_key(|&i| ( to_chase - i).abs())
-        .unwrap().clone()
+    let mut min: NumberPr = vec[0];
+    let mut min_diff: NumberPr = (to_chase - vec[0]).abs();
+    for &i in vec[1..].iter() {
+        let diff = (to_chase - i).abs();
+        if diff < min_diff {
+            if diff == 0 { //found same match
+                return to_chase;
+            }
+            min_diff = diff;
+            min = i;
+        }
+    }
+
+    min
 }
 
 /*
