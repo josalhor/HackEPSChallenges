@@ -1,10 +1,10 @@
 extern crate rand;
-use std::time::{Duration, Instant};
-use std::thread::sleep;
+extern crate rayon;
+
+use rayon::prelude::*;
+use std::time::{Instant};
 use rand::prelude::*;
-use std::process::{Command, Stdio};
-use std::{io, env};
-use std::io::Write;
+use std::{env};
 
 type NumberPr = i16;
 const MAX_GEN : u16 = u16::max_value();
@@ -27,12 +27,17 @@ fn find_closer(vec: &Vec<NumberPr>, to_chase: NumberPr) -> NumberPr {
         .unwrap().clone()
 }
 
+/*
+ * Use: ./program toChase NumberElementsLen
+*/
+
 fn main() {
+
     let to_chase = env::args().nth(1).unwrap().parse::<NumberPr>().unwrap();
     let len = env::args().nth(2).unwrap().parse::<usize>().unwrap();
     let vectors = get_vectors(len);
     let start = Instant::now();
-    let values : Vec<_> = vectors.iter().map(|v| find_closer(v, to_chase)).collect();
+    let values : Vec<_> = vectors.par_iter().map(|v| find_closer(v, to_chase)).collect();
     println!("{} ms for whatever you did.", start.elapsed().as_millis());
     println!("To chase: {:?}", to_chase);
     //println!("Vectors: {:?}", vectors);
