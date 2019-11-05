@@ -22,20 +22,10 @@ fn get_vectors(len: usize) -> [Vec<NumberPr>; 2] {
 
 fn find_closer(vec: &Vec<NumberPr>, to_chase: NumberPr) -> NumberPr {
     assert!(vec.len() > 0);
-    let mut min: NumberPr = vec[0];
-    let mut min_diff: NumberPr = (to_chase - vec[0]).abs();
-    for &i in vec[1..].iter() {
-        let diff = (to_chase - i).abs();
-        if diff < min_diff {
-            if diff == 0 { //found same match
-                return to_chase;
-            }
-            min_diff = diff;
-            min = i;
-        }
-    }
-
-    min
+    vec.par_iter()
+        .min_by_key(|&i| (to_chase - i).abs()) // if the search space was small enough one could leave early by return if found 0
+        .unwrap()
+        .clone()
 }
 
 /*
@@ -48,7 +38,7 @@ fn main() {
     let len = env::args().nth(2).unwrap().parse::<usize>().unwrap();
     let vectors = get_vectors(len);
     let start = Instant::now();
-    let values : Vec<_> = vectors.par_iter().map(|v| find_closer(v, to_chase)).collect();
+    let values : Vec<_> = vectors.iter().map(|v| find_closer(v, to_chase)).collect();
     println!("{} ms for whatever you did.", start.elapsed().as_millis());
     println!("To chase: {:?}", to_chase);
     //println!("Vectors: {:?}", vectors);
