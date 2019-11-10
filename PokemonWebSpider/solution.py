@@ -2,6 +2,8 @@ import multiprocessing
 import random
 from bs4 import BeautifulSoup
 import requests
+import webbrowser
+import os
 
 class Pokemon:
     def __init__(self, id, name, url, img_url, types):
@@ -19,6 +21,9 @@ class Pokemon:
 SOURCE_BASE = "https://pokemondb.net"
 SOURCE = SOURCE_BASE + "/pokedex/national"
 SOURCE_EV = SOURCE_BASE + "/evolution"
+
+SOURCE_TABLE = 'Table_Fixed_Column/index.html'
+TAGET_TABLE = 'Table_Fixed_Column/target.html'
 
 def get_pokemon_from_node(div):
     pokedex_url = div.a['href']
@@ -91,9 +96,11 @@ def generate_html_poke(poke):
     </tr>"""
     data_html = f"""
     <tr class="row100 body">
+        <td class="cell100 column1">{poke.name}</td>
         <td class="cell100 column2">{poke.id}</td>
         <td class="cell100 column3">{poke.types[0]}</td>
         <td class="cell100 column4">{poke.types[1]}</td>
+        <td class="cell100 column5"><img alt="{poke.id}" src="{poke.img_url}" width="100" height="100"></td>
     </tr>"""
     return name_html, data_html
 
@@ -101,10 +108,13 @@ htmls = list(map(generate_html_poke, selected))
 names_html = ''.join(map(lambda x: x[0], htmls))
 data_html = ''.join((map(lambda x: x[1], htmls)))
 
-with open('Table_Fixed_Column/index.html', 'r') as f:
+with open(SOURCE_TABLE, 'r') as f:
     data = f.read()
     data = data.replace(r'{{replace_pokemon_names}}', names_html)
     data = data.replace(r'{{replace_pokemon_data}}', data_html)
 
-with open('Table_Fixed_Column/target.html', 'w') as f:
+
+with open(TAGET_TABLE, 'w') as f:
     f.write(data)
+
+webbrowser.open(os.path.abspath(TAGET_TABLE))
