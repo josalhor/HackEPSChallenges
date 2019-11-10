@@ -23,7 +23,7 @@ SOURCE = SOURCE_BASE + "/pokedex/national"
 SOURCE_EV = SOURCE_BASE + "/evolution"
 
 SOURCE_TABLE = 'Table_Fixed_Column/index.html'
-TAGET_TABLE = 'Table_Fixed_Column/target.html'
+TARGET_TABLE = 'Table_Fixed_Column/target.html'
 
 def get_pokemon_from_node(div):
     pokedex_url = div.a['href']
@@ -83,38 +83,36 @@ def get_evolutions():
         evolutions.append(ev_nums)
     return evolutions
 
-pokemons = get_pokemons()
-evolutions = get_evolutions()
-
-selected = generate_team(pokemons, evolutions)
-
-
 def generate_html_poke(poke):
-    name_html = f"""
-    <tr class="row100 body">
-        <td class="cell100 column1">{poke.name}</td>
-    </tr>"""
     data_html = f"""
     <tr class="row100 body">
         <td class="cell100 column1">{poke.name}</td>
         <td class="cell100 column2">{poke.id}</td>
         <td class="cell100 column3">{poke.types[0]}</td>
         <td class="cell100 column4">{poke.types[1]}</td>
-        <td class="cell100 column5"><img alt="{poke.id}" src="{poke.img_url}" width="100" height="100"></td>
+        <td class="cell100 column5" style="padding-right: 0px;"><img alt="{poke.id}" src="{poke.img_url}" width="100" height="100"></td>
     </tr>"""
-    return name_html, data_html
-
-htmls = list(map(generate_html_poke, selected))
-names_html = ''.join(map(lambda x: x[0], htmls))
-data_html = ''.join((map(lambda x: x[1], htmls)))
-
-with open(SOURCE_TABLE, 'r') as f:
-    data = f.read()
-    data = data.replace(r'{{replace_pokemon_names}}', names_html)
-    data = data.replace(r'{{replace_pokemon_data}}', data_html)
+    return data_html
 
 
-with open(TAGET_TABLE, 'w') as f:
-    f.write(data)
+if __name__ == '__main__':
+    pokemons = get_pokemons()
+    evolutions = get_evolutions()
 
-webbrowser.open(os.path.abspath(TAGET_TABLE))
+    selected = generate_team(pokemons, evolutions)
+
+    htmls = list(map(generate_html_poke, selected))
+    data_html = ''.join(htmls)
+    """
+    Source of the template: https://colorlib.com/wp/template/fixed-column-table/
+    I reformated it for this use case and added images and stuff
+    """
+    with open(SOURCE_TABLE, 'r') as f:
+        data = f.read()
+        data = data.replace(r'{{replace_pokemon_data}}', data_html)
+
+
+    with open(TARGET_TABLE, 'w') as f:
+        f.write(data)
+
+    webbrowser.open(os.path.abspath(TARGET_TABLE))
