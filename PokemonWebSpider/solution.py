@@ -42,7 +42,7 @@ def pick_poke(picked_id, picked_types, pokemons, evolutions):
         pick = random.choice(pokemons)
         if pick.id in picked_id or \
             len(pick.types) != 2 or \
-            any(map(lambda x: ((pick.types[0] in x) and (pick.types[1] in x)),
+            any(map(lambda x: ((pick.types[0] in x) or (pick.types[1] in x)),  #note the OR could be an AND, depending on the problem
                 picked_types)) or \
             not is_compatible_ev(pick.id, evolutions, picked_id):
             continue
@@ -81,6 +81,30 @@ def get_evolutions():
 pokemons = get_pokemons()
 evolutions = get_evolutions()
 
-print(generate_team(pokemons, evolutions))
+selected = generate_team(pokemons, evolutions)
 
-#TODO: Output cool Html...
+
+def generate_html_poke(poke):
+    name_html = f"""
+    <tr class="row100 body">
+        <td class="cell100 column1">{poke.name}</td>
+    </tr>"""
+    data_html = f"""
+    <tr class="row100 body">
+        <td class="cell100 column2">{poke.id}</td>
+        <td class="cell100 column3">{poke.types[0]}</td>
+        <td class="cell100 column4">{poke.types[1]}</td>
+    </tr>"""
+    return name_html, data_html
+
+htmls = list(map(generate_html_poke, selected))
+names_html = ''.join(map(lambda x: x[0], htmls))
+data_html = ''.join((map(lambda x: x[1], htmls)))
+
+with open('Table_Fixed_Column/index.html', 'r') as f:
+    data = f.read()
+    data = data.replace(r'{{replace_pokemon_names}}', names_html)
+    data = data.replace(r'{{replace_pokemon_data}}', data_html)
+
+with open('Table_Fixed_Column/target.html', 'w') as f:
+    f.write(data)
