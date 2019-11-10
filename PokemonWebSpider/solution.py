@@ -37,20 +37,25 @@ def is_compatible_ev(id, evolutions, picked_id):
                     return False
     return True
 
-def pick_id(picked_id, pokemons, evolutions):
+def pick_poke(picked_id, picked_types, pokemons, evolutions):
     while True:
         pick = random.choice(pokemons)
         if pick.id in picked_id or \
             len(pick.types) != 2 or \
+            any(map(lambda x: ((pick.types[0] in x) and (pick.types[1] in x)),
+                picked_types)) or \
             not is_compatible_ev(pick.id, evolutions, picked_id):
             continue
-        return pick.id
+        return pick
     
 def generate_team(pokemons, evolutions):
     PICK_N = 6
     picked_id = []
+    picked_types = []
     for _ in range(PICK_N):
-        picked_id.append(pick_id(picked_id, pokemons, evolutions))
+        picked = pick_poke(picked_id, picked_types, pokemons, evolutions)
+        picked_id.append(picked.id)
+        picked_types.append(picked.types)
     return list(filter(lambda x: x.id in picked_id, pokemons))
 
 
