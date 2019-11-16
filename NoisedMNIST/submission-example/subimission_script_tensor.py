@@ -6,24 +6,17 @@ from typing import Union
 
 import numpy as np
 
-#from sklearn.pipeline import Pipeline
-#from sklearn.datasets import fetch_openml
-#from sklearn.preprocessing import StandardScaler
-#from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-#from sklearn.neural_network import MLPClassifier
-#from sklearn.naive_bayes import GaussianNB
-#from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
-#from sklearn.base import BaseEstimator, TransformerMixin
-#from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report
 
 import tensorflow as tf
 from tensorflow import keras
 
-
 import matplotlib.pyplot as plt
-#from sklearn.linear_model import LogisticRegression
 
+'''
+Classifier with tensorflow
+'''
 
 DATASET_URL = ('https://firebasestorage.googleapis.com/v0/b/hackeps-2019.'
                 'appspot.com/o/noised-MNIST.npz?alt=media&token=4cee641b-9e31'
@@ -39,20 +32,18 @@ def download_file(url: str,
 def train(x: np.ndarray, 
             y: np.ndarray):    
     model = keras.Sequential([
-        #keras.layers.Input((28,28,1)),
-        #keras.layers.Flatten(input_shape=(28, 28)),
         keras.layers.Conv2D(64, kernel_size=(3, 3), input_shape=(28, 28, 1), activation='relu', padding='same'),
-        #keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu', padding='same'),
-        keras.layers.Dense(16*16, activation='relu'),
+        keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu', padding='same'),
+        keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu', padding='same'),
+        keras.layers.Flatten(input_shape=(28, 28)),
+        keras.layers.Dense(20*20, activation='relu'),
         keras.layers.Dense(14*14, activation='relu'),
-        keras.layers.Dense(12*12, activation='relu'),
-        keras.layers.Dense(10*10, activation='relu'),
         keras.layers.Dense(10, activation='softmax')
     ])
     model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
-    model.fit(x, y, epochs=15, batch_size=128)
+    model.fit(x, y, epochs=8, batch_size=128)
     return model
 
 
@@ -78,22 +69,20 @@ x = shape(x)
 x_submission = shape(x_submission)
 x_extra, y_extra = np.load(extra_fname).values()
 x_extra = shape(x_extra)
-x_train, x_test, y_train, y_test = train_test_split(x_extra, y_extra, test_size=.40, random_state=42)
 
-# Train the model with whole data provided in the noised MNIST data
+
+x_train = x_extra
+y_train = y_extra
+x_test = x
+y_test = y
+
+x_train, _, y_train, _ = train_test_split(x_extra, y_extra, test_size=.25, random_state=42)
+
 model = train(x_train, y_train)
 
-# Inference on the x_submission data
-test_loss, test_acc = model.evaluate(x_test,  y_test, verbose=2)
+y_pred = model.predict_classes(x_test)
+print(y_pred)
 
-print('WAIT', test_loss, test_acc)
-input('W')
-
-# Remember to commit and push this file
-# create_submission_file(y_pred)
-
-
-#TODO: Fix this:
 def plot_confusion_matrix(y_true, y_pred,
                             cmap=plt.cm.Blues):
 
@@ -101,7 +90,7 @@ def plot_confusion_matrix(y_true, y_pred,
     cm = confusion_matrix(y_true, y_pred)
     cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
     ax.figure.colorbar(im, ax=ax)
     ax.set(xticks=np.arange(cm.shape[1]),
@@ -113,5 +102,11 @@ def plot_confusion_matrix(y_true, y_pred,
 
 print(classification_report(y_test, y_pred))
 print('Testing with', len(y_test))
+
 plot_confusion_matrix(y_test, y_pred)
 plt.show()
+
+model.save('my_model')
+
+y_pred_sub = model.predict_classes(x_submission)
+create_submission_file(y_pred_sub)

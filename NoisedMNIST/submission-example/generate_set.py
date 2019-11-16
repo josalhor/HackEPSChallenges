@@ -12,10 +12,12 @@ import matplotlib.pyplot as plt
 
 from itertools import chain
 
-IMAGE_SIZE = 28
+'''
+Generates bigger dataset with multiple combinations
+of the same image with different kinds of noise
+'''
 
-x, y = fetch_openml('mnist_784', return_X_y=True)
-y = y.astype(np.int32)
+IMAGE_SIZE = 28
 
 #@title Code to add noise to MNIST images
 class Deformation(object):
@@ -62,9 +64,17 @@ noise_mnist = DeformationPipeline(WhitePatch(7.),
                                   DropPixels(8.))
 
 # Convert add noise to all data
-x = np.array(chain(x,x,x))
-y = np.array(chain(y,y,y))
-noised_x = np.stack([noise_mnist(o) for o in x])
 
-print(x.shape)
+def generate_data_set(n_iter):
+    list_xs = []
+    list_ys = []
+    for _ in range(n_iter):
+        x, y =  fetch_openml('mnist_784', return_X_y=True, cache=True)
+        y = y.astype(np.int32)
+        noised_x = np.stack([noise_mnist(o) for o in x])
+        list_xs.append(x)
+        list_ys.append(y)
+    return np.concatenate(list_xs), np.concatenate(list_ys)
+
+x, y = generate_data_set(8)
 np.savez_compressed('noised-MNIST-EXTRA.npz', x=x, y=y)
