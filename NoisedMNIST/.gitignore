@@ -1,9 +1,0 @@
-.ipynb_checkpoints
-data/
-venv
-.vscode
-*.npz
-weights_model.*
-submission-example/my_model
-submission-example/checkpoint
-submission-example/submission_script_sklearn.py
